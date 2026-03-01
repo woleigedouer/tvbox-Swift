@@ -1,0 +1,80 @@
+import SwiftUI
+
+/// 视频卡片组件
+struct VodCardView: View {
+    let video: Movie.Video
+    @State private var isHovered = false
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            // 封面图
+            ZStack(alignment: .bottomLeading) {
+                CachedAsyncImage(url: URL.posterURL(from: video.pic)) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(2/3, contentMode: .fill)
+                } placeholder: {
+                    placeholderImage
+                        .overlay(ProgressView().tint(.white))
+                }
+                .frame(maxWidth: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+                .shadow(color: .black.opacity(0.4), radius: 8, x: 0, y: 4)
+                
+                // 底部渐变叠加（用于保护备注文字）
+                if !video.note.isEmpty {
+                    LinearGradient(
+                        colors: [.black.opacity(0.8), .clear],
+                        startPoint: .bottom,
+                        endPoint: .center
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+                }
+                
+                // 备注标签
+                if !video.note.isEmpty {
+                    Text(video.note)
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule().fill(Color.orange.opacity(0.9))
+                        )
+                        .padding(8)
+                }
+            }
+            .scaleEffect(isHovered ? 1.05 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isHovered)
+            .onHover { hovering in
+                isHovered = hovering
+            }
+            
+            // 标题
+            VStack(alignment: .leading, spacing: 2) {
+                Text(video.name)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                
+                if !video.type.isEmpty {
+                    Text(video.type)
+                        .font(.system(size: 10))
+                        .foregroundColor(.white.opacity(0.5))
+                }
+            }
+            .padding(.horizontal, 4)
+        }
+    }
+    
+    private var placeholderImage: some View {
+        RoundedRectangle(cornerRadius: AppTheme.cardRadius)
+            .fill(Color.white.opacity(0.05))
+            .aspectRatio(2/3, contentMode: .fill)
+            .overlay(
+                Image(systemName: "film.fill")
+                    .font(.system(size: 30))
+                    .foregroundColor(.white.opacity(0.2))
+            )
+    }
+}
